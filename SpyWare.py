@@ -12,7 +12,7 @@ class NetworkMonitor(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Four-Graph Network Monitor")
-        self.setGeometry(100, 100, 1600, 900)  # Increased size to accommodate 4 graphs
+        self.setGeometry(100, 100, 1600, 900)  
 
         self.setStyleSheet("""
             QMainWindow, QWidget { background-color: #2b2b2b; color: #ffffff; }
@@ -23,37 +23,37 @@ class NetworkMonitor(QMainWindow):
 
         main_layout = QHBoxLayout()
 
-        # Left panel for graphs
+       
         left_panel = QWidget()
         left_layout = QVBoxLayout(left_panel)
 
-        # Download Speed graph
+       
         self.download_speed_plot = self.create_plot("Download Speed (MB/s)", 'g')
         left_layout.addWidget(self.download_speed_plot)
 
-        # Upload Speed graph
+       
         self.upload_speed_plot = self.create_plot("Upload Speed (MB/s)", 'r')
         left_layout.addWidget(self.upload_speed_plot)
 
-        # Total Download graph
+        
         self.total_download_plot = self.create_plot("Total Data Downloaded (MB)", 'c')
         left_layout.addWidget(self.total_download_plot)
 
-        # Total Upload graph
+       
         self.total_upload_plot = self.create_plot("Total Data Uploaded (MB)", 'm')
         left_layout.addWidget(self.total_upload_plot)
 
         main_layout.addWidget(left_panel)
 
-        # Right panel for process list and overall stats
+       
         right_panel = QWidget()
         right_layout = QVBoxLayout(right_panel)
 
-        # Overall network stats
+        
         self.stats_label = QLabel()
         right_layout.addWidget(self.stats_label)
 
-        # Process list
+      
         self.process_table = QTableWidget()
         self.process_table.setColumnCount(4)
         self.process_table.setHorizontalHeaderLabels(["Process", "Download (MB/s)", "Upload (MB/s)", "Total (MB/s)"])
@@ -66,7 +66,7 @@ class NetworkMonitor(QMainWindow):
         central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
 
-        # Initialize data
+        
         self.times = []
         self.download_speeds = []
         self.upload_speeds = []
@@ -77,7 +77,7 @@ class NetworkMonitor(QMainWindow):
         self.last_total_upload = 0
         self.last_process_bytes = {}
 
-        # Update timer
+        
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_data)
         self.timer.start(1000)  # Update every second
@@ -95,7 +95,7 @@ class NetworkMonitor(QMainWindow):
         current_time = time.time() - self.start_time
         self.times.append(current_time)
 
-        # Get network stats
+       
         net_io = psutil.net_io_counters()
         download_speed = bytes_to_mb(net_io.bytes_recv - self.last_total_download)  # MB/s
         upload_speed = bytes_to_mb(net_io.bytes_sent - self.last_total_upload)  # MB/s
@@ -107,17 +107,17 @@ class NetworkMonitor(QMainWindow):
         self.total_download.append(total_download)
         self.total_upload.append(total_upload)
 
-        # Update graphs
+        
         self.download_speed_plot.getPlotItem().curves[0].setData(self.times, self.download_speeds)
         self.upload_speed_plot.getPlotItem().curves[0].setData(self.times, self.upload_speeds)
         self.total_download_plot.getPlotItem().curves[0].setData(self.times, self.total_download)
         self.total_upload_plot.getPlotItem().curves[0].setData(self.times, self.total_upload)
 
-        # Update stats label
+       
         self.stats_label.setText(f"Download Speed: {download_speed:.2f} MB/s | Upload Speed: {upload_speed:.2f} MB/s\n"
                                  f"Total Downloaded: {total_download:.2f} MB | Total Uploaded: {total_upload:.2f} MB")
 
-        # Update process list (same as before)
+       
         processes = []
         for proc in psutil.process_iter(['name', 'pid']):
             try:
@@ -148,11 +148,11 @@ class NetworkMonitor(QMainWindow):
             self.process_table.setItem(i, 2, QTableWidgetItem(f"{proc['upload']:.2f}"))
             self.process_table.setItem(i, 3, QTableWidgetItem(f"{proc['download'] + proc['upload']:.2f}"))
 
-        # Prepare for next update
+        
         self.last_total_download = net_io.bytes_recv
         self.last_total_upload = net_io.bytes_sent
 
-        # Keep only last 60 seconds of data
+        
         if len(self.times) > 60:
             self.times = self.times[-60:]
             self.download_speeds = self.download_speeds[-60:]
