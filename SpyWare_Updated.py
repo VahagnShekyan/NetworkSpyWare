@@ -121,7 +121,7 @@ class NetworkMonitor(QMainWindow):
         self.tray_icon = QSystemTrayIcon(self)
         icon_path = "icon.png"
         if not os.path.exists(icon_path):
-            icon_path = None  # or set a default icon here
+            icon_path = None  
         self.tray_icon.setIcon(QIcon(icon_path))
 
         tray_menu = QMenu()
@@ -271,15 +271,12 @@ class NetworkMonitor(QMainWindow):
                 self.data[key]["values"] = self.data[key]["values"][-self.max_data_points:]
 
     def get_process_network_usage(self):
-        # Dictionary to accumulate network usage per process
         process_network_usage = {}
 
-        # Get active network connections (only 'inet' type to ignore local sockets)
         connections = psutil.net_connections(kind='inet')
 
-        # Iterate over each connection
         for conn in connections:
-            if conn.status == psutil.CONN_ESTABLISHED and conn.pid:  # Only consider established connections with a valid PID
+            if conn.status == psutil.CONN_ESTABLISHED and conn.pid:  
                 try:
                     proc = psutil.Process(conn.pid)
                     with proc.oneshot():
@@ -288,20 +285,17 @@ class NetworkMonitor(QMainWindow):
                         if process_name not in process_network_usage:
                             process_network_usage[process_name] = {'download': 0, 'upload': 0}
 
-                        # Accumulate network usage data based on connection type (upload/download)
-                        if conn.raddr:  # If there's a remote address, it's uploading
-                            process_network_usage[process_name]['upload'] += conn.raddr[1]  # Upload (assuming raddr represents remote)
-                        if conn.laddr:  # If there's a local address, it's downloading
-                            process_network_usage[process_name]['download'] += conn.laddr[1]  # Download (assuming laddr represents local)
+                        if conn.raddr:  
+                            process_network_usage[process_name]['upload'] += conn.raddr[1]  
+                        if conn.laddr: 
+                            process_network_usage[process_name]['download'] += conn.laddr[1] 
                 except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
                     pass
 
-        # Convert usage to MB and return sorted by total traffic
         sorted_processes = sorted(process_network_usage.items(),
                                   key=lambda x: x[1]['download'] + x[1]['upload'],
                                   reverse=True)
 
-        # Prepare the process list for table updates
         process_list = []
         for process_name, usage in sorted_processes:
             process_list.append({
@@ -407,7 +401,6 @@ class NetworkMonitor(QMainWindow):
         self.data["total_bandwidth"] = self.data.get("total_bandwidth", []) + [
             (current_time, download_speed + upload_speed)]
 
-        # Remove data points older than the alert period
         self.data["total_bandwidth"] = [
             (t, v) for t, v in self.data["total_bandwidth"]
             if current_time - t <= self.bandwidth_alert_period
